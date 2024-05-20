@@ -28,7 +28,7 @@
   },
   "include": [
     "src"
-, "src/utils/getGasless.ts"  ],
+  ],
   "references": [
     {
       "path": "./tsconfig.node.json"
