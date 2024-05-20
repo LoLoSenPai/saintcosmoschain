@@ -12,6 +12,7 @@ import {
   relayerUrlConst,
   clientIdConst,
 } from "./consts/parameters";
+import { BaseSepoliaTestnet } from '@thirdweb-dev/chains';
 
 const container = document.getElementById("root");
 const root = createRoot(container!);
@@ -30,7 +31,7 @@ const clientId = urlParams.get("clientId") || clientIdConst || "";
 
 root.render(
   <React.StrictMode>
-    <ThirdwebProvider activeChain={chain} sdkOptions={sdkOptions} clientId={clientId}>
+    <ThirdwebProvider activeChain={BaseSepoliaTestnet} sdkOptions={sdkOptions} clientId={clientId}>
       <Toaster />
       <App />
     </ThirdwebProvider>

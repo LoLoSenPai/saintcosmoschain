@@ -27,9 +27,9 @@ import {
 } from "./consts/parameters";
 
 const urlParams = new URL(window.location.toString()).searchParams;
-const contractAddress = urlParams.get("contract") || contractConst || "";
+const contractAddress = urlParams.get("contract") ?? (contractConst || "");
 const primaryColor =
-  urlParams.get("primaryColor") || primaryColorConst || undefined;
+  urlParams.get("primaryColor") ?? (primaryColorConst || undefined);
 
 const colors = {
   purple: "#7C3AED",
@@ -65,12 +65,12 @@ export default function Home() {
     contractQuery.contract,
     address,
   );
-  const claimerProofs = useClaimerProofs(contractQuery.contract, address || "");
+  const claimerProofs = useClaimerProofs(contractQuery.contract, address ?? "");
   const claimIneligibilityReasons = useClaimIneligibilityReasons(
     contractQuery.contract,
     {
       quantity,
-      walletAddress: address || "",
+      walletAddress: address ?? "",
     },
   );
   const unclaimedSupply = useUnclaimedNFTSupply(contractQuery.contract);
@@ -123,7 +123,7 @@ export default function Home() {
     let bnMaxClaimable;
     try {
       bnMaxClaimable = BigNumber.from(
-        activeClaimCondition.data?.maxClaimableSupply || 0,
+        activeClaimCondition.data?.maxClaimableSupply ?? 0,
       );
     } catch (e) {
       bnMaxClaimable = BigNumber.from(1_000_000);
@@ -132,7 +132,7 @@ export default function Home() {
     let perTransactionClaimable;
     try {
       perTransactionClaimable = BigNumber.from(
-        activeClaimCondition.data?.maxClaimablePerWallet || 0,
+        activeClaimCondition.data?.maxClaimablePerWallet ?? 0,
       );
     } catch (e) {
       perTransactionClaimable = BigNumber.from(1_000_000);
@@ -181,7 +181,7 @@ export default function Home() {
     try {
       return (
         (activeClaimCondition.isSuccess &&
-          BigNumber.from(activeClaimCondition.data?.availableSupply || 0).lte(
+          BigNumber.from(activeClaimCondition.data?.availableSupply ?? 0).lte(
             0,
           )) ||
         (numberClaimed === numberTotal && !isOpenEdition)
@@ -300,6 +300,28 @@ export default function Home() {
     );
   }
 
+  const renderPhases = () => {
+    if (claimConditions.isSuccess && claimConditions.data) {
+      return claimConditions.data.map((condition, index) => (
+        <div key={index} className="flex flex-col border p-4 rounded-lg mb-4">
+          <h2 className="text-lg font-bold">{condition?.metadata?.name}</h2>
+          <p>Start Time: {condition.startTime.toLocaleString()}</p>
+          {condition?.metadata?.name === 'Public phase' ? (
+            <p>
+              Minted: {numberClaimed} / {numberTotal}
+            </p>
+          ) : (
+            <p>
+              Minted: {condition.currentMintSupply} / {condition.maxClaimableSupply}
+            </p>
+          )}
+        </div>
+      ));
+    } else {
+      return <p>Loading phases...</p>;
+    }
+  };
+
   return (
     <div className="w-screen min-h-screen">
       <ConnectWallet className="!absolute !right-4 !top-4" theme={theme} />
@@ -356,11 +378,11 @@ export default function Home() {
               </h1>
               {contractMetadata.data?.description ||
                 contractMetadata.isLoading ? (
-                  <div className="text-gray-500 line-clamp-2">
+                <div className="text-gray-500 line-clamp-2">
                   {contractMetadata.isLoading ? (
                     <div
                       role="status"
-                        className="space-y-8 animate-pulse md:flex md:items-center md:space-x-8 md:space-y-0"
+                      className="space-y-8 animate-pulse md:flex md:items-center md:space-x-8 md:space-y-0"
                     >
                       <div className="w-full">
                         <div className="mb-2.5 h-2 max-w-[480px] rounded-full bg-gray-200 dark:bg-gray-700"></div>
@@ -374,6 +396,10 @@ export default function Home() {
                 </div>
               ) : null}
             </div>
+
+            {/* Render phases */}
+            {renderPhases()}
+
             <div className="flex w-full gap-4">
               {dropNotReady ? (
                 <span className="text-red-500">
@@ -385,9 +411,9 @@ export default function Home() {
                   Drop is starting soon. Please check back later.
                 </span>
               ) : (
-                    <div className="flex flex-col w-full gap-4">
-                      <div className="flex flex-col w-full gap-4 lg:flex-row lg:items-center lg:gap-4 ">
-                        <div className="flex w-full px-2 border border-gray-400 rounded-lg h-11 dark:border-gray-800 md:w-full">
+                <div className="flex flex-col w-full gap-4">
+                  <div className="flex flex-col w-full gap-4 lg:flex-row lg:items-center lg:gap-4 ">
+                    <div className="flex w-full px-2 border border-gray-400 rounded-lg h-11 dark:border-gray-800 md:w-full">
                       <button
                         onClick={() => {
                           const value = quantity - 1;
@@ -399,12 +425,12 @@ export default function Home() {
                             setQuantity(value);
                           }
                         }}
-                            className="flex items-center justify-center h-full px-2 text-2xl text-center rounded-l-md disabled:cursor-not-allowed disabled:text-gray-500 dark:text-white dark:disabled:text-gray-600"
+                        className="flex items-center justify-center h-full px-2 text-2xl text-center rounded-l-md disabled:cursor-not-allowed disabled:text-gray-500 dark:text-white dark:disabled:text-gray-600"
                         disabled={isSoldOut || quantity - 1 < 1}
                       >
                         -
                       </button>
-                          <p className="flex items-center justify-center w-full h-full font-mono text-center dark:text-white lg:w-full">
+                      <p className="flex items-center justify-center w-full h-full font-mono text-center dark:text-white lg:w-full">
                         {!isLoading && isSoldOut ? "Sold Out" : quantity}
                       </p>
                       <button
@@ -428,7 +454,7 @@ export default function Home() {
                     </div>
                     <Web3Button
                       contractAddress={
-                        contractQuery.contract?.getAddress() || ""
+                        contractQuery.contract?.getAddress() ?? ""
                       }
                       style={{
                         backgroundColor:
@@ -463,7 +489,7 @@ export default function Home() {
                         <div role="status">
                           <svg
                             aria-hidden="true"
-                                className="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
+                            className="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                             viewBox="0 0 100 101"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
