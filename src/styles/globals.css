@@ -45,7 +45,7 @@ html {
   color-scheme: dark;
 }
 body {
-  @apply min-h-screen-safe bg-white dark:bg-black text-black dark:text-white;
+  @apply text-black bg-white min-h-screen-safe dark:bg-black dark:text-white;
 }
 
 @layer base {
@@ -124,4 +124,8 @@ body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+.halo {
+  box-shadow: 0 0 15px 5px rgba(0, 123, 255, 0.6);
 }
