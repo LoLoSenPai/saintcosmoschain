@@ -5,11 +5,30 @@ const Phase = ({ condition, numberClaimed, numberTotal, isActive }: { condition:
     const { countdown, isLive } = useCountdown(new Date(condition.startTime));
 
     return (
-        <div className={`flex flex-col border p-4 rounded-lg mb-4 ${isActive ? 'halo' : ''}`}>
+        <div className={`flex flex-col border gap-3 p-4 rounded-lg mb-4 ${isActive ? 'shadow-neon' : ''}`}>
             <h2 className="text-lg font-bold">{condition?.metadata?.name}</h2>
-            <p>
-                {isLive ? "Live" : `Start In: ${countdown.days}d ${countdown.hours}h ${countdown.minutes}m ${countdown.seconds}s`}
-            </p>
+            <div>
+                {isLive ? "Live" : (
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                        <div className="flex flex-col items-center p-2 rounded-md bg-countdownBg halo">
+                            <span className="text-xl font-bold ">{countdown.days}</span>
+                            <span className="text-sm ">Days</span>
+                        </div>
+                        <div className="flex flex-col items-center p-2 rounded-md bg-countdownBg halo">
+                            <span className="text-xl font-bold ">{countdown.hours}</span>
+                            <span className="text-sm ">Hours</span>
+                        </div>
+                        <div className="flex flex-col items-center p-2 rounded-md bg-countdownBg halo">
+                            <span className="text-xl font-bold ">{countdown.minutes}</span>
+                            <span className="text-sm ">Minutes</span>
+                        </div>
+                        <div className="flex flex-col items-center p-2 rounded-md bg-countdownBg halo">
+                            <span className="text-xl font-bold ">{countdown.seconds}</span>
+                            <span className="text-sm ">Seconds</span>
+                        </div>
+                    </div>
+                )}
+            </div>
             {condition?.metadata?.name === 'Public phase' ? (
                 <p>
                     Minted: {numberClaimed} / {numberTotal}
@@ -20,8 +39,8 @@ const Phase = ({ condition, numberClaimed, numberTotal, isActive }: { condition:
                 </p>
             )}
         </div>
+
     );
 };
-
 
 export default Phase;

@@ -55,11 +55,18 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        countdownBg: '#0a0a0a',
+        countdownNeon: '#00d9ff',
+        countdownValue: '#fff',
+        countdownLabel: '#aaa'
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        neon: '0 0 10px rgba(0, 123, 255, 0.6), 0 0 20px rgba(0, 123, 255, 0.6), 0 0 30px rgba(0, 123, 255, 0.6), 0 0 40px rgba(0, 123, 255, 0.6)'
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],

@@ -14,7 +14,7 @@ import {
 import { BigNumber, utils } from "ethers";
 import { useMemo, useState } from "react";
 import { HeadingImage } from "./components/HeadingImage";
-import { PoweredBy } from "./components/PoweredBy";
+// import { PoweredBy } from "./components/PoweredBy";
 import { parseIneligibility } from "./utils/parseIneligibility";
 import {
   clientIdConst,
@@ -390,7 +390,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <PoweredBy />
+      {/* <PoweredBy /> */}
     </div>
   );
 }

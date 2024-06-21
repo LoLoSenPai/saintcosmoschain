@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 
 const useCountdown = (targetDate: Date) => {
   const [countdown, setCountdown] = useState(() => calculateTimeLeft(targetDate));
-  const [isLive, setisLive] = useState(false);
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       const timeLeft = calculateTimeLeft(targetDate);
       setCountdown(timeLeft);
       if (Object.values(timeLeft).every(value => value === 0)) {
-        setisLive(true);
+        setIsLive(true);
         clearInterval(intervalId);
       }
     }, 1000);
