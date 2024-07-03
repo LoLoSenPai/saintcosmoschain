@@ -332,7 +332,7 @@ export default function Home() {
   };
 
   return (
-    <div className="w-screen min-h-screen overflow-hidden">
+    <div className="w-screen min-h-screen overflow-x-hidden">
       <Header theme={theme} />
       <div className="grid h-screen grid-cols-1 lg:grid-cols-12">
         <div className="items-center justify-center hidden w-full h-full lg:col-span-5 lg:flex lg:px-12">

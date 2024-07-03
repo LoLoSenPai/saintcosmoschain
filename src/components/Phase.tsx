@@ -5,7 +5,7 @@ const Phase = ({ condition, numberClaimed, numberTotal, isActive }: { condition:
     const { countdown, isLive } = useCountdown(new Date(condition.startTime));
 
     return (
-        <div className={`flex flex-col border gap-3 p-4 rounded-lg mb-4 ${isActive ? 'shadow-neon' : ''}`}>
+        <div className={`flex flex-col border gap-2 p-4 rounded-lg mb-4 ${isActive ? 'shadow-neon' : ''}`}>
             <h2 className="text-lg font-bold">{condition?.metadata?.name}</h2>
             <div>
                 {isLive ? "Live" : (
