@@ -38,6 +38,15 @@ const Phase = ({ condition, numberClaimed, numberTotal, isActive }: { condition:
                     Minted: {condition.currentMintSupply} / {condition.maxClaimableSupply}
                 </p>
             )}
+            {/* <p>
+                {condition?.metadata?.name === 'Public phase' ? (
+                    `Minted: ${numberClaimed} / ${numberTotal}`
+                ) : condition?.metadata?.name === 'OG Phase' ? (
+                    `Minted: ${Math.max(0, condition.currentMintSupply - 20)} / ${condition.maxClaimableSupply}`
+                ) : (
+                    `Minted: ${condition.currentMintSupply} / ${condition.maxClaimableSupply}`
+                )}
+            </p> */}
         </div>
 
     );
