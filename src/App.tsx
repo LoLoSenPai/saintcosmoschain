@@ -10,11 +10,15 @@ import {
   useContractMetadata,
   useNFT,
   useUnclaimedNFTSupply,
+  useContractRead
 } from "@thirdweb-dev/react";
 import { BigNumber, utils } from "ethers";
 import { useMemo, useState } from "react";
 import { HeadingImage } from "./components/HeadingImage";
-// import { PoweredBy } from "./components/PoweredBy";
+import Header from "./components/Header";
+import MintInfo from "./components/MintInfo";
+import MintButton from "./components/MintButton";
+import Phase from "./components/Phase";
 import { parseIneligibility } from "./utils/parseIneligibility";
 import {
   clientIdConst,
@@ -22,10 +26,6 @@ import {
   primaryColorConst,
   themeConst,
 } from "./consts/parameters";
-import Header from './components/Header';
-import MintInfo from './components/MintInfo';
-import MintButton from './components/MintButton';
-import Phase from './components/Phase';
 
 const urlParams = new URL(window.location.toString()).searchParams;
 const contractAddress = urlParams.get("contract") ?? (contractConst || "");
@@ -58,26 +58,44 @@ export default function Home() {
   }
   const root = window.document.documentElement;
   root.classList.add(theme);
+
   const address = useAddress();
   const [quantity, setQuantity] = useState(1);
+
   const claimConditions = useClaimConditions(contractQuery.contract);
-  const activeClaimCondition = useActiveClaimConditionForWallet(
-    contractQuery.contract,
-    address,
+
+  // Logique de détermination si une phase a commencé
+  const hasAnyPhaseStarted = useMemo(() => {
+    const now = new Date();
+    return (
+      claimConditions.data?.some((condition) => new Date(condition.startTime) <= now) ?? false
+    );
+  }, [claimConditions.data]);
+
+  const { data: activeClaimConditionId, error: activeClaimConditionError } = useContractRead(
+    hasAnyPhaseStarted ? contractQuery.contract : null,
+    "getActiveClaimConditionId"
   );
+
+  const activeClaimCondition = useActiveClaimConditionForWallet(
+    hasAnyPhaseStarted ? contractQuery.contract : null,
+    address
+  );
+
   const claimerProofs = useClaimerProofs(contractQuery.contract, address ?? "");
   const claimIneligibilityReasons = useClaimIneligibilityReasons(
     contractQuery.contract,
     {
       quantity,
       walletAddress: address ?? "",
-    },
+    }
   );
+
   const unclaimedSupply = useUnclaimedNFTSupply(contractQuery.contract);
   const claimedSupply = useClaimedNFTSupply(contractQuery.contract);
   const { data: firstNft, isLoading: firstNftLoading } = useNFT(
     contractQuery.contract,
-    0,
+    0
   );
 
   const numberClaimed = useMemo(() => {
@@ -92,16 +110,16 @@ export default function Home() {
 
   const priceToMint = useMemo(() => {
     const bnPrice = BigNumber.from(
-      activeClaimCondition.data?.currencyMetadata.value || 0,
+      activeClaimCondition.data?.currencyMetadata?.value || 0
     );
     return `${utils.formatUnits(
       bnPrice.mul(quantity).toString(),
-      activeClaimCondition.data?.currencyMetadata.decimals ?? 18,
-    )} ${activeClaimCondition.data?.currencyMetadata.symbol}`;
+      activeClaimCondition.data?.currencyMetadata?.decimals || 18
+    )} ${activeClaimCondition.data?.currencyMetadata?.symbol || ""}`;
   }, [
-    activeClaimCondition.data?.currencyMetadata.decimals,
-    activeClaimCondition.data?.currencyMetadata.symbol,
-    activeClaimCondition.data?.currencyMetadata.value,
+    activeClaimCondition.data?.currencyMetadata?.decimals,
+    activeClaimCondition.data?.currencyMetadata?.symbol,
+    activeClaimCondition.data?.currencyMetadata?.value,
     quantity,
   ]);
 
@@ -111,7 +129,7 @@ export default function Home() {
 
       const featureDetected = detectContractFeature(
         contractWrapper,
-        "ERC721SharedMetadata",
+        "ERC721SharedMetadata"
       );
 
       return featureDetected;
@@ -123,7 +141,7 @@ export default function Home() {
     let bnMaxClaimable;
     try {
       bnMaxClaimable = BigNumber.from(
-        activeClaimCondition.data?.maxClaimableSupply ?? 0,
+        activeClaimCondition.data?.maxClaimableSupply ?? 0
       );
     } catch (e) {
       bnMaxClaimable = BigNumber.from(1_000_000);
@@ -132,7 +150,7 @@ export default function Home() {
     let perTransactionClaimable;
     try {
       perTransactionClaimable = BigNumber.from(
-        activeClaimCondition.data?.maxClaimablePerWallet ?? 0,
+        activeClaimCondition.data?.maxClaimablePerWallet ?? 0
       );
     } catch (e) {
       perTransactionClaimable = BigNumber.from(1_000_000);
@@ -146,14 +164,11 @@ export default function Home() {
 
     if (snapshotClaimable) {
       if (snapshotClaimable === "0") {
-        // allowed unlimited for the snapshot
         bnMaxClaimable = BigNumber.from(1_000_000);
       } else {
         try {
           bnMaxClaimable = BigNumber.from(snapshotClaimable);
-        } catch (e) {
-          // fall back to default case
-        }
+        } catch (e) { }
       }
     }
 
@@ -182,7 +197,7 @@ export default function Home() {
       return (
         (activeClaimCondition.isSuccess &&
           BigNumber.from(activeClaimCondition.data?.availableSupply ?? 0).lte(
-            0,
+            0
           )) ||
         (numberClaimed === numberTotal && !isOpenEdition)
       );
@@ -199,15 +214,15 @@ export default function Home() {
 
   const canClaim = useMemo(() => {
     return (
-      activeClaimCondition.isSuccess &&
-      claimIneligibilityReasons.isSuccess &&
-      claimIneligibilityReasons.data?.length === 0 &&
+      activeClaimCondition?.isSuccess &&
+      claimIneligibilityReasons?.isSuccess &&
+      claimIneligibilityReasons?.data?.length === 0 &&
       !isSoldOut
-    );
+    ) ?? false;
   }, [
-    activeClaimCondition.isSuccess,
-    claimIneligibilityReasons.data?.length,
-    claimIneligibilityReasons.isSuccess,
+    activeClaimCondition?.isSuccess,
+    claimIneligibilityReasons?.data?.length,
+    claimIneligibilityReasons?.isSuccess,
     isSoldOut,
   ]);
 
@@ -227,7 +242,7 @@ export default function Home() {
 
   const buttonLoading = useMemo(
     () => isLoading || claimIneligibilityReasons.isLoading,
-    [claimIneligibilityReasons.isLoading, isLoading],
+    [claimIneligibilityReasons.isLoading, isLoading]
   );
 
   const buttonText = useMemo(() => {
@@ -237,7 +252,7 @@ export default function Home() {
 
     if (canClaim) {
       const pricePerToken = BigNumber.from(
-        activeClaimCondition.data?.currencyMetadata.value || 0,
+        activeClaimCondition.data?.currencyMetadata?.value || 0
       );
       if (pricePerToken.eq(0)) {
         return "Mint (Free)";
@@ -257,7 +272,7 @@ export default function Home() {
     canClaim,
     claimIneligibilityReasons.data,
     buttonLoading,
-    activeClaimCondition.data?.currencyMetadata.value,
+    activeClaimCondition.data?.currencyMetadata?.value,
     priceToMint,
     quantity,
   ]);
@@ -266,21 +281,20 @@ export default function Home() {
     () =>
       claimConditions.data?.length === 0 ||
       claimConditions.data?.every((cc) => cc.maxClaimableSupply === "0"),
-    [claimConditions.data],
+    [claimConditions.data]
   );
 
   const dropStartingSoon = useMemo(
     () =>
-      (claimConditions.data &&
+      !hasAnyPhaseStarted || (claimConditions.data &&
         claimConditions.data.length > 0 &&
-        activeClaimCondition.isError) ||
-      (activeClaimCondition.data &&
-        activeClaimCondition.data.startTime > new Date()),
+        activeClaimConditionError),
     [
       activeClaimCondition.data,
-      activeClaimCondition.isError,
+      activeClaimConditionError,
       claimConditions.data,
-    ],
+      hasAnyPhaseStarted
+    ]
   );
 
   const clientId = urlParams.get("clientId") ?? (clientIdConst || "");
@@ -338,7 +352,7 @@ export default function Home() {
         <div className="items-center justify-center hidden w-full h-full lg:col-span-5 lg:flex lg:px-12">
           <HeadingImage
             src={contractMetadata.data?.image ?? (firstNft?.metadata.image ?? "")}
-            isLoading={isLoading}
+            isLoading={contractMetadata.isLoading || firstNftLoading}
           />
         </div>
         <div className="flex items-center justify-center w-full h-full col-span-1 lg:col-span-7">
@@ -346,7 +360,7 @@ export default function Home() {
             <div className="flex w-full mt-8 xs:mb-8 xs:mt-0 lg:hidden">
               <HeadingImage
                 src={contractMetadata.data?.image ?? (firstNft?.metadata.image ?? "")}
-                isLoading={isLoading}
+                isLoading={contractMetadata.isLoading || firstNftLoading}
               />
             </div>
 
@@ -354,7 +368,7 @@ export default function Home() {
               numberClaimed={numberClaimed}
               numberTotal={numberTotal}
               isOpenEdition={isOpenEdition}
-              isLoading={isLoading}
+              isLoading={contractMetadata.isLoading || firstNftLoading}
               contractMetadata={contractMetadata}
             />
 
@@ -390,7 +404,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {/* <PoweredBy /> */}
     </div>
   );
 }
